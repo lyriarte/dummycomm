@@ -5,8 +5,8 @@
 */
 
 #define LED 13
-#define BTX 0
-#define BRX 1
+#define BTX 8
+#define BRX 7
 #define CARRIER 2
 #define ERROR -1
 
@@ -17,6 +17,19 @@ void setup() {
 	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
+	Serial.begin(9600);
+}
+
+int bytevalue() {
+	int value=0;
+	int power=1;
+	int i=0;
+	while (i<8) {
+		if (bytebits[i++])
+			value = value + power;
+		power = power * 2;
+	}
+	return value;
 }
 
 int readFrame(int cyclecount0, int cyclecount1)
@@ -82,6 +95,8 @@ void loop() {
 		bytebits[--i] = frame;
 	}
 	digitalWrite(LED, LOW);
+	Serial.print("byte read: ");
+	Serial.println(bytevalue());
 	for(i=0; i<32; i++) {
 		sendCarrier(BTX, sleepms);
 	}
@@ -95,4 +110,3 @@ void loop() {
 	sendCarrier(BTX, sleepms);
 	sendCarrier(BTX, sleepms);
 }
-
