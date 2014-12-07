@@ -41,6 +41,10 @@ for state in autodict:
 		for trans in state.get('transitions'):
 			autobin = autobin + strtrans(trans,offset)
 
-print autobin
-
-
+if len(sys.argv) < 3 :
+	print autobin
+else:
+	ibyte = 0
+	while ibyte + 8 <= len(autobin):
+		print int(autobin[ibyte:ibyte+8],2)
+		ibyte = ibyte + 8
