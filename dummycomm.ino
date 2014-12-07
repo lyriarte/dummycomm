@@ -12,6 +12,7 @@
 
 int sleepms = 20;
 int bytebits[8];
+int bytesbuf[256];
 
 void setup() {
 	pinMode(LED, OUTPUT);
@@ -20,7 +21,7 @@ void setup() {
 	Serial.begin(9600);
 }
 
-int bytevalue() {
+int bytebitsGet() {
 	int value=0;
 	int power=1;
 	int i=0;
@@ -30,6 +31,17 @@ int bytevalue() {
 		power = power * 2;
 	}
 	return value;
+}
+
+void bytebitsSet(int value) {
+	int i=0;
+	while (i<8) {
+		if (value & 1)
+			bytebits[i++] = 1;
+		else
+			bytebits[i++] = 0;
+		value = value >> 1;
+	}
 }
 
 int readFrame(int cyclecount0, int cyclecount1)
@@ -59,6 +71,17 @@ int getFrame(int pin)
 	return readFrame(cyclecount0, cyclecount1);
 }
 
+void sendBytebits()
+{
+	int i=8;
+	while (i) {
+		if (bytebits[--i])
+			send1(BTX, sleepms);
+		else
+			send0(BTX, sleepms);
+	}
+}
+
 void sendCarrier(int pin, int sleepms)
 {
 	digitalWrite(pin, HIGH);
@@ -85,8 +108,25 @@ void send1(int pin, int sleepms)
 
 void loop() {
 	int frame,i;
+	Serial.println("enter size:");
+	while(Serial.available() <= 0);
+	bytesbuf[0]=Serial.parseInt();
+	i=0;
+	while(i<bytesbuf[0]) {
+		while(Serial.available() <= 0);
+		bytesbuf[++i]=Serial.parseInt();
+	}
 	digitalWrite(LED, HIGH);
 	digitalWrite(BTX, LOW);
+	for(i=0; i<32; i++) {
+		sendCarrier(BTX, sleepms);
+	}
+	for(i=0; i<=bytesbuf[0]; i++) {
+		bytebitsSet(bytesbuf[i]);
+		sendBytebits();
+	}
+	sendCarrier(BTX, sleepms);
+	sendCarrier(BTX, sleepms);
 	i=8;
 	while (i) {
 		while((frame = getFrame(BRX)) == CARRIER) {
@@ -96,17 +136,5 @@ void loop() {
 	}
 	digitalWrite(LED, LOW);
 	Serial.print("byte read: ");
-	Serial.println(bytevalue());
-	for(i=0; i<32; i++) {
-		sendCarrier(BTX, sleepms);
-	}
-	i=8;
-	while (i) {
-		if (bytebits[--i])
-			send1(BTX, sleepms);
-		else
-			send0(BTX, sleepms);
-	}
-	sendCarrier(BTX, sleepms);
-	sendCarrier(BTX, sleepms);
+	Serial.println(bytebitsGet());
 }
