@@ -9,7 +9,10 @@ def strbin(num,l):
 	return str
 
 def strtrans(trans, offset):
-	str = trans.get('inB') + trans.get('inA') + '00'
+	if trans.get('delay'):
+		str = strbin(trans.get('delay'),7) + '1'
+	else:
+		str = trans.get('inB') + trans.get('inA') + '00'
 	str = str + strbin(offset[trans.get('target')],8)
 	return str
 
