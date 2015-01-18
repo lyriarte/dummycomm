@@ -6,7 +6,7 @@
 
 #define LED 13
 #define BTX 8
-#define BRX 7
+#define BRX 9
 #define CARRIER 2
 #define ERROR -1
 
@@ -108,6 +108,7 @@ void send1(int pin, int sleepms)
 
 void loop() {
 	int frame,i;
+	digitalWrite(LED, HIGH);
 	Serial.println("enter size:");
 	while(Serial.available() <= 0);
 	bytesbuf[0]=Serial.parseInt();
@@ -116,7 +117,7 @@ void loop() {
 		while(Serial.available() <= 0);
 		bytesbuf[++i]=Serial.parseInt();
 	}
-	digitalWrite(LED, HIGH);
+	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
 	for(i=0; i<32; i++) {
 		sendCarrier(BTX, sleepms);
@@ -134,7 +135,6 @@ void loop() {
 		}
 		bytebits[--i] = frame;
 	}
-	digitalWrite(LED, LOW);
 	Serial.print("byte read: ");
 	Serial.println(bytebitsGet());
 }
