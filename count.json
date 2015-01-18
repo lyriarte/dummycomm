@@ -5,8 +5,9 @@
     "outA": "0000",
     "transitions": [
       {
-        "target": 1,
-        "delay": 64
+        "target": 11,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -16,8 +17,9 @@
     "outA": "0001",
     "transitions": [
       {
-        "target": 2,
-        "delay": 64
+        "target": 12,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -27,8 +29,9 @@
     "outA": "0010",
     "transitions": [
       {
-        "target": 3,
-        "delay": 64
+        "target": 13,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -38,8 +41,9 @@
     "outA": "0011",
     "transitions": [
       {
-        "target": 4,
-        "delay": 64
+        "target": 14,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -49,8 +53,9 @@
     "outA": "0100",
     "transitions": [
       {
-        "target": 5,
-        "delay": 64
+        "target": 15,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -60,8 +65,9 @@
     "outA": "0101",
     "transitions": [
       {
-        "target": 6,
-        "delay": 64
+        "target": 16,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -71,8 +77,9 @@
     "outA": "0110",
     "transitions": [
       {
-        "target": 7,
-        "delay": 64
+        "target": 17,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -82,8 +89,9 @@
     "outA": "0111",
     "transitions": [
       {
-        "target": 8,
-        "delay": 64
+        "target": 18,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -93,8 +101,9 @@
     "outA": "1000",
     "transitions": [
       {
-        "target": 9,
-        "delay": 64
+        "target": 19,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
   },
@@ -104,10 +113,126 @@
     "outA": "1001",
     "transitions": [
       {
-        "target": 0,
-        "delay": 64
+        "target": 10,
+        "inA": "10",
+        "inB": "0000"
       }
     ]
+  },
+  {
+    "comment": "10",
+    "outC": "01111110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 0,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "11",
+    "outC": "00010010",
+    "outA": "0001",
+    "transitions": [
+      {
+        "target": 1,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "12",
+    "outC": "10111100",
+    "outA": "0010",
+    "transitions": [
+      {
+        "target": 2,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "13",
+    "outC": "10110110",
+    "outA": "0011",
+    "transitions": [
+      {
+        "target": 3,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "14",
+    "outC": "11010010",
+    "outA": "0100",
+    "transitions": [
+      {
+        "target": 4,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "15",
+    "outC": "11100110",
+    "outA": "0101",
+    "transitions": [
+      {
+        "target": 5,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "16",
+    "outC": "11101110",
+    "outA": "0110",
+    "transitions": [
+      {
+        "target": 6,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "17",
+    "outC": "01110010",
+    "outA": "0111",
+    "transitions": [
+      {
+        "target": 7,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "18",
+    "outC": "11111110",
+    "outA": "1000",
+    "transitions": [
+      {
+        "target": 8,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "19",
+    "outC": "11110110",
+    "outA": "1001",
+    "transitions": [
+      {
+        "target": 9,
+        "delay": 8
+      }
+    ]
+  },
+  {
+    "comment": "etat 20 final",
+    "outC": "00000001",
+    "outA": "1111"
   }
 ]
 
