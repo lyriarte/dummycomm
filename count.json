@@ -1,0 +1,113 @@
+[
+  {
+    "comment": "0",
+    "outC": "01111110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 1,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "1",
+    "outC": "00010010",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 2,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "2",
+    "outC": "10111100",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 3,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "3",
+    "outC": "10110110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 4,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "4",
+    "outC": "11010010",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 5,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "5",
+    "outC": "11100110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 6,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "6",
+    "outC": "11101110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 7,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "7",
+    "outC": "01110010",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 8,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "8",
+    "outC": "11111110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 9,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "9",
+    "outC": "11110110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 0,
+        "delay": 64
+      }
+    ]
+  }
+]
+
