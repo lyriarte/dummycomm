@@ -29,6 +29,12 @@ if value >255:
 	print("Error: illegal input")
 	exit(1)
 
-print("00000010" + hextable[value/16] + hextable[value%16][4:] + hextable[value%16][:4])
+strbin = "00000010" + hextable[value/16] + hextable[value%16][4:] + hextable[value%16][:4]
 
-
+if len(sys.argv) < 3 :
+	print strbin
+else:
+	ibyte = 0
+	while ibyte + 8 <= len(strbin):
+		print int(strbin[ibyte:ibyte+8],2)
+		ibyte = ibyte + 8
