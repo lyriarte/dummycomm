@@ -28,6 +28,7 @@
 #DEFINE PRESS1	PORTA,5
 
 #DEFINE ERRFLAG	USERFLAGS,0
+#DEFINE WRITE_B	USERFLAGS,1
 #DEFINE CARRIER	USERFLAGS,7
 
 ;******************************************************************************
@@ -278,11 +279,12 @@ READBIT
 ;******************************************************************************
 START
 	CLRF LATA
+	CLRF LATB
+	CLRF LATC
+RESTART
 	MOVLW 0xB0	; A0..A3 out, A4..A5 in
 	MOVWF TRISA
-	CLRF LATB	; B2 (BRX) in, B4..B7 in
 	BCF TRISB,1	; B1 (BTX) out
-	CLRF LATC
 	CLRF TRISC	; C0..C7 out
 	; user variables and flags
 	CLRF USERFLAGS
@@ -306,8 +308,17 @@ DATAREAD			; read 8 bits
 	MOVFF TOREAD,INDF0	; DATABYTES+0 <- byte count
 	MOVFF INDF0,TEMP	; TEMP <- bytes to read
 	TSTFSZ TEMP
-	BRA DATAREADMAIN
+	BRA DATAREADSTART
 	BRA STARTSEND	; no bytes to read
+DATAREADSTART
+	MOVLW 0xF0		; B4..B7 in
+	IORWF TRISB
+	MOVLW 0x02
+	CPFSEQ TEMP		; if just 2 bytes to read...
+	BRA DATAREADMAIN
+	BSF WRITE_B		; then using also B for output
+	MOVLW 0x0D		; B1 (BTX), B4..B7 out
+	ANDWF TRISB
 DATAREADMAIN
 	MOVLW 0x08		; read one byte
 	MOVWF BITCNT
@@ -319,6 +330,9 @@ DATAREADMAIN
 	DECFSZ TEMP		; dec bytes to read
 	BRA DATAREADMAIN	
 AUTOMAININIT
+	CLRF LATA
+	CLRF LATB
+	CLRF LATC
 	MOVLW DATABYTES
 	MOVWF FSR0L		; file register <- DATABYTES
 AUTOMAINLOOP
@@ -336,6 +350,12 @@ AUTOMAINTRANSCOUNT
 	MOVFF INDF0,TEMP
 	MOVLW 0xF0
 	ANDWF TEMP		; use high quartet for transition count 
+	BTFSS WRITE_B	; or for output on LATB
+	BRA AUTOMAINTRANSTEST
+	MOVF TEMP,0		; W <- high quartet
+	IORWF LATB		; set LATB high quartet
+	BRA AUTOMAINFINISH	; displayed 2 bytes, done
+AUTOMAINTRANSTEST
 	RRNCF TEMP
 	RRNCF TEMP
 	RRNCF TEMP
@@ -380,5 +400,7 @@ SENDCARRIERMAIN
 	CALL SENDCARRIER	; send 2 carrier frames to finish
 	CALL SENDCARRIER
 	BCF ERRFLAG		; clear user error flag
+	BTFSS WRITE_B
 	BRA MAINLOOP
+	BRA RESTART
 END
