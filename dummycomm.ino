@@ -62,6 +62,14 @@ void bytebitsSet(int value) {
 	}
 }
 
+void bytesbufHexled() {
+	byte high= bytesbuf[1] / 16;
+	byte low = bytesbuf[1] % 16;
+	bytesbuf[0] = 2;
+	bytesbuf[1] = hexled[high];
+	bytesbuf[2] = ((hexled[low] & 0x0f) << 4 ) | ((hexled[low] & 0xf0) >> 4 );
+}
+
 int readFrame(int cyclecount0, int cyclecount1)
 {
 	if (cyclecount0 < cyclecount1) {
@@ -136,9 +144,7 @@ void loop() {
 		bytesbuf[++i]=Serial.parseInt();
 	}
 	if (bytesbuf[0] == 1) {
-		bytesbuf[1] = hexled[bytesbuf[1]];
-		bytesbuf[2] = 0;
-		bytesbuf[0] = bytesbuf[0] + 1;
+		bytesbufHexled();
 	}
 	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
