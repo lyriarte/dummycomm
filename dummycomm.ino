@@ -5,14 +5,14 @@
 */
 
 #define LED 13
-#define BTX 8
-#define BRX 9
+#define BTX 9
+#define BRX 8
 #define CARRIER 2
 #define ERROR -1
 
 int sleepms = 20;
-int bytebits[8];
-int bytesbuf[256];
+byte bytebits[8];
+byte bytesbuf[256];
 
 void setup() {
 	pinMode(LED, OUTPUT);
