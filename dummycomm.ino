@@ -13,6 +13,24 @@
 int sleepms = 20;
 byte bytebits[8];
 byte bytesbuf[256];
+byte hexled[] = {
+  0b01111110,
+  0b00010010,
+  0b10111100,
+  0b10110110,
+  0b11010010,
+  0b11100110,
+  0b11101110,
+  0b00110010,
+  0b11111110,
+  0b11110110,
+  0b11111010,
+  0b11001110,
+  0b01101100,
+  0b10011110,
+  0b11101100,
+  0b11101000
+};
 
 void setup() {
 	pinMode(LED, OUTPUT);
@@ -116,6 +134,11 @@ void loop() {
 	while(i<bytesbuf[0]) {
 		while(Serial.available() <= 0);
 		bytesbuf[++i]=Serial.parseInt();
+	}
+	if (bytesbuf[0] == 1) {
+		bytesbuf[1] = hexled[bytesbuf[1]];
+		bytesbuf[2] = 0;
+		bytesbuf[0] = bytesbuf[0] + 1;
 	}
 	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
