@@ -16,7 +16,7 @@
       },
       {
         "target": 2,
-        "delay": 16
+        "delay": 64
       }
     ]
   },
@@ -32,7 +32,7 @@
     "transitions": [
       {
         "target": 3,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -43,7 +43,7 @@
     "transitions": [
       {
         "target": 4,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -54,7 +54,7 @@
     "transitions": [
       {
         "target": 5,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -65,7 +65,7 @@
     "transitions": [
       {
         "target": 6,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -76,7 +76,7 @@
     "transitions": [
       {
         "target": 7,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -87,7 +87,7 @@
     "transitions": [
       {
         "target": 8,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -98,7 +98,7 @@
     "transitions": [
       {
         "target": 9,
-        "delay": 4
+        "delay": 16
       }
     ]
   },
@@ -109,7 +109,7 @@
     "transitions": [
       {
         "target": 0,
-        "delay": 4
+        "delay": 16
       }
     ]
   }
