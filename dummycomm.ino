@@ -14,6 +14,7 @@
 #define ERROR -1
 
 int sleepms = 5;
+byte iobyte = 128;
 byte bytebits[8];
 Servo servo;
 
@@ -111,13 +112,8 @@ void send1(int pin, int sleepms)
 }
 
 void loop() {
-  	byte iobyte;
 	unsigned int angle;
 	int frame,i;
-	digitalWrite(LED, HIGH);
-	Serial.println("enver byte value:");
-	while(Serial.available() <= 0);
-	iobyte=Serial.parseInt();
 	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
 	for(i=0; i<16; i++) {
@@ -136,6 +132,7 @@ void loop() {
 		}
 		bytebits[--i] = frame;
 	}
+	digitalWrite(LED, HIGH);
 	iobyte=bytebitsGet();
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
