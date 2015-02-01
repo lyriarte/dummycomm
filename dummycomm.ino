@@ -4,19 +4,24 @@
 * one: 1110
 */
 
+#include <Servo.h> 
+
 #define LED 13
 #define BTX 9
 #define BRX 8
+#define SRV 7
 #define CARRIER 2
 #define ERROR -1
 
 int sleepms = 5;
 byte bytebits[8];
+Servo servo;
 
 void setup() {
 	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
+	servo.attach(SRV);
 	Serial.begin(9600);
 }
 
@@ -107,6 +112,7 @@ void send1(int pin, int sleepms)
 
 void loop() {
   	byte iobyte;
+	unsigned int angle;
 	int frame,i;
 	digitalWrite(LED, HIGH);
 	Serial.println("enver byte value:");
@@ -130,6 +136,11 @@ void loop() {
 		}
 		bytebits[--i] = frame;
 	}
+	iobyte=bytebitsGet();
 	Serial.print("byte read: ");
-	Serial.println(bytebitsGet());
+	Serial.println(iobyte);
+	angle=((unsigned int)iobyte)*180/255;
+	Serial.print("servo angle: ");
+	Serial.println(angle);
+	servo.write(angle);
 }
