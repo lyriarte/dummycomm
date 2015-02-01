@@ -10,27 +10,8 @@
 #define CARRIER 2
 #define ERROR -1
 
-int sleepms = 20;
+int sleepms = 5;
 byte bytebits[8];
-byte bytesbuf[256];
-byte hexled[] = {
-  0b01111110,
-  0b00010010,
-  0b10111100,
-  0b10110110,
-  0b11010010,
-  0b11100110,
-  0b11101110,
-  0b00110010,
-  0b11111110,
-  0b11110110,
-  0b11111010,
-  0b11001110,
-  0b01101100,
-  0b10011110,
-  0b11101100,
-  0b11101000
-};
 
 void setup() {
 	pinMode(LED, OUTPUT);
@@ -39,10 +20,10 @@ void setup() {
 	Serial.begin(9600);
 }
 
-int bytebitsGet() {
-	int value=0;
-	int power=1;
-	int i=0;
+byte bytebitsGet() {
+	byte value=0;
+	byte power=1;
+	byte i=0;
 	while (i<8) {
 		if (bytebits[i++])
 			value = value + power;
@@ -51,8 +32,8 @@ int bytebitsGet() {
 	return value;
 }
 
-void bytebitsSet(int value) {
-	int i=0;
+void bytebitsSet(byte value) {
+	byte i=0;
 	while (i<8) {
 		if (value & 1)
 			bytebits[i++] = 1;
@@ -60,14 +41,6 @@ void bytebitsSet(int value) {
 			bytebits[i++] = 0;
 		value = value >> 1;
 	}
-}
-
-void bytesbufHexled() {
-	byte high= bytesbuf[1] / 16;
-	byte low = bytesbuf[1] % 16;
-	bytesbuf[0] = 2;
-	bytesbuf[1] = hexled[high];
-	bytesbuf[2] = ((hexled[low] & 0x0f) << 4 ) | ((hexled[low] & 0xf0) >> 4 );
 }
 
 int readFrame(int cyclecount0, int cyclecount1)
@@ -133,30 +106,23 @@ void send1(int pin, int sleepms)
 }
 
 void loop() {
+  	byte iobyte;
 	int frame,i;
 	digitalWrite(LED, HIGH);
-	Serial.println("enter size:");
+	Serial.println("enver byte value:");
 	while(Serial.available() <= 0);
-	bytesbuf[0]=Serial.parseInt();
-	i=0;
-	while(i<bytesbuf[0]) {
-		while(Serial.available() <= 0);
-		bytesbuf[++i]=Serial.parseInt();
-	}
-	if (bytesbuf[0] == 1) {
-		bytesbufHexled();
-	}
+	iobyte=Serial.parseInt();
 	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
-	for(i=0; i<32; i++) {
+	for(i=0; i<16; i++) {
 		sendCarrier(BTX, sleepms);
 	}
-	for(i=0; i<=bytesbuf[0]; i++) {
-		bytebitsSet(bytesbuf[i]);
-		sendBytebits();
-	}
+	bytebitsSet(iobyte);
+	sendBytebits();
 	sendCarrier(BTX, sleepms);
 	sendCarrier(BTX, sleepms);
+	Serial.print("byte sent: ");
+	Serial.println(iobyte);
 	i=8;
 	while (i) {
 		while((frame = getFrame(BRX)) == CARRIER) {
