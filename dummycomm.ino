@@ -11,10 +11,12 @@
 #define BRX 8
 #define SRV 7
 #define CARRIER 2
+#define NOFRAME 3
+#define NOFRAME_TRESHOLD 0xFFFF
 #define ERROR -1
 
-int sleepms = 5;
-byte iobyte = 128;
+int sleepms;
+byte iobyte;
 byte bytebits[8];
 Servo servo;
 
@@ -24,6 +26,8 @@ void setup() {
 	pinMode(BRX, INPUT);
 	servo.attach(SRV);
 	Serial.begin(9600);
+	sleepms = 5;
+	iobyte = 128;
 }
 
 byte bytebitsGet() {
@@ -49,7 +53,7 @@ void bytebitsSet(byte value) {
 	}
 }
 
-int readFrame(int cyclecount0, int cyclecount1)
+byte readFrame(unsigned int cyclecount0, unsigned int cyclecount1)
 {
 	if (cyclecount0 < cyclecount1) {
 		if (cyclecount1 < 2 * cyclecount0)
@@ -63,22 +67,24 @@ int readFrame(int cyclecount0, int cyclecount1)
 	return ERROR; // never reach
 }
 
-int getFrame(int pin)
+byte getFrame(int pin)
 {
-	int cyclecount1=0;
-	int cyclecount0=0;
+	unsigned int cyclecount1=0;
+	unsigned int cyclecount0=0;
 	while (digitalRead(pin) == HIGH) {
 		cyclecount1 = cyclecount1 + 1;
 	}
 	while (digitalRead(pin) == LOW) {
 		cyclecount0 = cyclecount0 + 1;
+		if (cyclecount0 == NOFRAME_TRESHOLD)
+			return NOFRAME;
 	}
 	return readFrame(cyclecount0, cyclecount1);
 }
 
 void sendBytebits()
 {
-	int i=8;
+	byte i=8;
 	while (i) {
 		if (bytebits[--i])
 			send1(BTX, sleepms);
@@ -112,15 +118,30 @@ void send1(int pin, int sleepms)
 }
 
 void sendByte(byte value) {
+	byte i;
+	digitalWrite(BTX, LOW);
+	for(i=0; i<16; i++) {
+		sendCarrier(BTX, sleepms);
+	}
 	bytebitsSet(value);
 	sendBytebits();
+	sendCarrier(BTX, sleepms);
+	sendCarrier(BTX, sleepms);
 }
 
 byte getByte() {
-	int frame,i;
+	byte frame,i;
 	i=8;
 	while (i) {
 		while((frame = getFrame(BRX)) >= CARRIER) {
+			if (frame == NOFRAME) {
+				if (Serial.available() > 0) {
+					digitalWrite(LED, HIGH);
+					frame = Serial.parseInt();
+					digitalWrite(LED, LOW);
+					return frame;
+				}
+			}
 			i=8;
 		}
 		bytebits[--i] = frame;
@@ -130,19 +151,10 @@ byte getByte() {
 
 void loop() {
 	unsigned int angle;
-	int i;
-	digitalWrite(LED, LOW);
-	digitalWrite(BTX, LOW);
-	for(i=0; i<16; i++) {
-		sendCarrier(BTX, sleepms);
-	}
 	sendByte(iobyte);
-	sendCarrier(BTX, sleepms);
-	sendCarrier(BTX, sleepms);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
 	iobyte=getByte();
-	digitalWrite(LED, HIGH);
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
 	angle=((unsigned int)iobyte)*180/255;
