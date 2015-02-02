@@ -111,29 +111,38 @@ void send1(int pin, int sleepms)
 	delay(sleepms);	
 }
 
+void sendByte(byte value) {
+	bytebitsSet(value);
+	sendBytebits();
+}
+
+byte getByte() {
+	int frame,i;
+	i=8;
+	while (i) {
+		while((frame = getFrame(BRX)) >= CARRIER) {
+			i=8;
+		}
+		bytebits[--i] = frame;
+	}
+	return bytebitsGet();
+}
+
 void loop() {
 	unsigned int angle;
-	int frame,i;
+	int i;
 	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
 	for(i=0; i<16; i++) {
 		sendCarrier(BTX, sleepms);
 	}
-	bytebitsSet(iobyte);
-	sendBytebits();
+	sendByte(iobyte);
 	sendCarrier(BTX, sleepms);
 	sendCarrier(BTX, sleepms);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
-	i=8;
-	while (i) {
-		while((frame = getFrame(BRX)) == CARRIER) {
-			i=8;
-		}
-		bytebits[--i] = frame;
-	}
+	iobyte=getByte();
 	digitalWrite(LED, HIGH);
-	iobyte=bytebitsGet();
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
 	angle=((unsigned int)iobyte)*180/255;
