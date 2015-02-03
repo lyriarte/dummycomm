@@ -26,6 +26,8 @@
 #DEFINE PRESS0	PORTA,4
 #DEFINE PRESS1	PORTA,5
 
+#DEFINE DOTLED	LATB,4
+
 #DEFINE ERRFLAG	USERFLAGS,0
 #DEFINE PRESS0F USERFLAGS,1
 #DEFINE PRESS1F USERFLAGS,2
@@ -49,9 +51,11 @@
 
 	TOSEND : 1	; sendbyte routine parameter
 	TOREAD : 1	; readframe routine in/out parameter
+	TOEDIT : 1	; edit byte routine in/out parameter
 
 	ROTCNT : 1	; rotation counter
 	BITCNT : 1	; bit counter
+	BRXCNT : 1	; check incoming data on BRX cycles count
 
 	COUNT0H : 1
 	COUNT0L : 1
@@ -253,6 +257,20 @@ READBIT
 	RLCF TOREAD		; rotate left
 	BRA READBYTELOOP; next bit in TOREAD,0 overwrites carry
 
+LONGPRESS0
+	MOVLW 0x80		; nb WAITUNIT for long press
+	MOVWF TEMP
+LONGPRESS0LOOP
+	CLRF WAIT
+	INCF WAIT		; wait 1 WAITUNIT
+	CALL WAITLOOP
+	BTFSS PRESS0
+	RETURN			; return if PRESS0 released
+	DECFSZ TEMP
+	BRA LONGPRESS0LOOP
+	MOVLW 0x10		; increment by 16
+	ADDWF TOEDIT
+	RETURN
 
 ;******************************************************************************
 ;	MAIN LOOP
@@ -326,6 +344,7 @@ MAINLOOP
 	; user variables and flags
 	CLRF USERFLAGS
 READCARRIERMAIN		; loop reading first carrier
+	BSF	DOTLED		; light DOT while reading
 	BCF ERRFLAG		; clear user error flag
 	MOVLW 0x08		; read 8 bits data
 	MOVWF BITCNT
@@ -333,8 +352,16 @@ READCARRIERMAIN		; loop reading first carrier
 	BTFSC ERRFLAG
 	BRA READCARRIERMAIN
 DATAREAD			; read 8 bits
+	MOVFF TOREAD,TOEDIT
+	; wait for BRX to stabilize
+	MOVLW 0x07
+	MOVWF WAIT
+	CALL WAITLOOP
+	; count cycles to check incoming data on BRX
+	SETF BRXCNT
+DATAEDIT
 	; high quartet on LATC
-	MOVFF TOREAD,TEMP
+	MOVFF TOEDIT,TEMP
 	MOVLW 0xF0
 	ANDWF TEMP
 	RRNCF TEMP
@@ -343,15 +370,15 @@ DATAREAD			; read 8 bits
 	RRNCF TEMP
 	MOVLW LCDHEX
 	ADDWF TEMP,0
-	MOVWF FSR0L		; file register <- LCDHEX + TOREAD high
+	MOVWF FSR0L		; file register <- LCDHEX + TOEDIT high
 	MOVFF INDF0,LATC; char on LATC
 	; low quartet in TEMP
-	MOVFF TOREAD,TEMP
+	MOVFF TOEDIT,TEMP
 	MOVLW 0x0F
 	ANDWF TEMP
 	MOVLW LCDHEX
 	ADDWF TEMP,0
-	MOVWF FSR0L		; file register <- LCDHEX + TOREAD low
+	MOVWF FSR0L		; file register <- LCDHEX + TOEDIT low
 	MOVFF INDF0,TEMP; TEMP <- char
 	MOVLW 0x0F		; char low on LATB high
 	ANDWF TEMP
@@ -368,26 +395,37 @@ DATAREAD			; read 8 bits
 	RRNCF TEMP
 	RRNCF TEMP
 	MOVFF TEMP,LATA
-	; push buttons increment TOREAD
+	; check BRX for incoming data
+CHECKBRX
+	BTFSS BRX
+	BRA BRX_CLEAR
+	DECFSZ BRXCNT
+	BRA CHECKBUTTONS
+	BRA MAINLOOP
+BRX_CLEAR
+	SETF BRXCNT
+	; push buttons increment TOEDIT
+CHECKBUTTONS
 	BTFSC PRESS0
 	BRA B0_PRESSED
 	BCF PRESS0F
 	BTFSC PRESS1
 	BRA B1_PRESSED
 	BCF PRESS1F
-	BRA DATAREAD
+	BRA DATAEDIT
 B0_PRESSED
 	BTFSC PRESS1	; B0 and B1 pressed -> send
 	BRA STARTSEND
 	BTFSS PRESS0F	; don't inc if BO already pressed
-	INCF TOREAD
+	INCF TOEDIT
 	BSF PRESS0F
-	BRA DATAREAD
+	CALL LONGPRESS0
+	BRA DATAEDIT
 B1_PRESSED
 	BTFSS PRESS1F	; don't dec if B1 already pressed
-	DECF TOREAD
+	DECF TOEDIT
 	BSF PRESS1F
-	BRA DATAREAD
+	BRA DATAEDIT
 STARTSEND
 	MOVLW 0x20		; send 32 carrier frames
 	MOVWF TEMP
@@ -395,10 +433,9 @@ SENDCARRIERMAIN
 	CALL SENDCARRIER
 	DECFSZ TEMP
 	BRA SENDCARRIERMAIN
-	MOVFF TOREAD,TOSEND
+	MOVFF TOEDIT,TOSEND
 	CALL SENDBYTE
 	CALL SENDCARRIER	; send 2 carrier frames to finish
 	CALL SENDCARRIER
-	BCF ERRFLAG		; clear user error flag
 	BRA MAINLOOP
 END
