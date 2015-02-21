@@ -4,8 +4,7 @@
 * one: 1110
 */
 
-#define LED 13
-#define BTX 9
+#define BTX 13
 #define BRX 8
 #define CARRIER 2
 #define ERROR -1
@@ -14,7 +13,6 @@ int sleepms = 5;
 byte bytebits[8];
 
 void setup() {
-	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
 	Serial.begin(9600);
@@ -108,11 +106,9 @@ void send1(int pin, int sleepms)
 void loop() {
   	byte iobyte;
 	int frame,i;
-	digitalWrite(LED, HIGH);
 	Serial.println("enver byte value:");
 	while(Serial.available() <= 0);
 	iobyte=Serial.parseInt();
-	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
 	for(i=0; i<16; i++) {
 		sendCarrier(BTX, sleepms);
