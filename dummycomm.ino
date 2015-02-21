@@ -6,8 +6,7 @@
 
 #include <Servo.h> 
 
-#define LED 13
-#define BTX 9
+#define BTX 13
 #define BRX 8
 #define SRV 7
 #define CARRIER 2
@@ -21,7 +20,6 @@ byte bytebits[8];
 Servo servo;
 
 void setup() {
-	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
 	servo.attach(SRV);
@@ -136,9 +134,7 @@ byte getByte() {
 		while((frame = getFrame(BRX)) >= CARRIER) {
 			if (frame == NOFRAME) {
 				if (Serial.available() > 0) {
-					digitalWrite(LED, HIGH);
 					frame = Serial.parseInt();
-					digitalWrite(LED, LOW);
 					return frame;
 				}
 			}
