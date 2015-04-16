@@ -31,10 +31,32 @@ byte hexled[] = {
   0b11101000
 };
 
+#define HELLO_SIZE 10
+byte hello[] = {
+142,
+16,
+129,
+4,
+240,
+16,
+129,
+8,
+1,
+0
+};
+
 void setup() {
+	int i=0;
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
 	Serial.begin(9600);
+	bytesbuf[0]=HELLO_SIZE;
+	while(i<bytesbuf[0]) {
+		bytesbuf[i+1]=hello[i];
+		i++;
+	}
+	Serial.println("Sending hello sequence");
+	sendBytesbuf();
 }
 
 int bytebitsGet() {
@@ -130,6 +152,20 @@ void send1(int pin, int sleepms)
 	delay(sleepms);	
 }
 
+void sendBytesbuf() {
+	int i;
+	digitalWrite(BTX, LOW);
+	for(i=0; i<32; i++) {
+		sendCarrier(BTX, sleepms);
+	}
+	for(i=0; i<=bytesbuf[0]; i++) {
+		bytebitsSet(bytesbuf[i]);
+		sendBytebits();
+	}
+	sendCarrier(BTX, sleepms);
+	sendCarrier(BTX, sleepms);
+}
+
 void loop() {
 	int frame,i;
 	Serial.println("enter size:");
@@ -143,16 +179,7 @@ void loop() {
 	if (bytesbuf[0] == 1) {
 		bytesbufHexled();
 	}
-	digitalWrite(BTX, LOW);
-	for(i=0; i<32; i++) {
-		sendCarrier(BTX, sleepms);
-	}
-	for(i=0; i<=bytesbuf[0]; i++) {
-		bytebitsSet(bytesbuf[i]);
-		sendBytebits();
-	}
-	sendCarrier(BTX, sleepms);
-	sendCarrier(BTX, sleepms);
+	sendBytesbuf();
 	i=8;
 	while (i) {
 		while((frame = getFrame(BRX)) == CARRIER) {
