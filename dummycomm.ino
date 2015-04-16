@@ -4,8 +4,7 @@
 * one: 1110
 */
 
-#define LED 13
-#define BTX 9
+#define BTX 13
 #define BRX 8
 #define CARRIER 2
 #define ERROR -1
@@ -33,7 +32,6 @@ byte hexled[] = {
 };
 
 void setup() {
-	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
 	Serial.begin(9600);
@@ -134,7 +132,6 @@ void send1(int pin, int sleepms)
 
 void loop() {
 	int frame,i;
-	digitalWrite(LED, HIGH);
 	Serial.println("enter size:");
 	while(Serial.available() <= 0);
 	bytesbuf[0]=Serial.parseInt();
@@ -146,7 +143,6 @@ void loop() {
 	if (bytesbuf[0] == 1) {
 		bytesbufHexled();
 	}
-	digitalWrite(LED, LOW);
 	digitalWrite(BTX, LOW);
 	for(i=0; i<32; i++) {
 		sendCarrier(BTX, sleepms);
