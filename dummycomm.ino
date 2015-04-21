@@ -12,6 +12,36 @@
 int sleepms = 5;
 byte bytebits[8];
 
+int stepperms = 5;
+byte steps8[] = {
+  HIGH,  LOW,  LOW,  LOW,
+  HIGH, HIGH,  LOW,  LOW,
+   LOW, HIGH,  LOW,  LOW,
+   LOW, HIGH, HIGH,  LOW,
+   LOW,  LOW, HIGH,  LOW, 
+   LOW,  LOW, HIGH, HIGH,
+  HIGH,  LOW,  LOW, HIGH,
+};
+
+void step8(byte pin1, byte pin2, byte pin3, byte pin4) {
+	byte i=0;
+	while (i<32) {
+		digitalWrite(pin1, steps8[i++]);
+		digitalWrite(pin2, steps8[i++]);
+		digitalWrite(pin3, steps8[i++]);
+		digitalWrite(pin4, steps8[i++]);
+		delay(stepperms);
+	}
+}  
+
+void stepClkw(byte pin1, byte pin2, byte pin3, byte pin4) {
+	step8(pin4, pin3, pin2, pin1);
+}
+
+void stepCclw(byte pin1, byte pin2, byte pin3, byte pin4) {
+	step8(pin1, pin2, pin3, pin4);
+}
+
 void setup() {
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
