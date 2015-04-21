@@ -4,11 +4,12 @@
 * one: 1110
 */
 
-#include <Servo.h> 
-
 #define BTX 13
 #define BRX 8
-#define SRV 7
+#define STEP1 5
+#define STEP2 4
+#define STEP3 3
+#define STEP4 2
 #define CARRIER 2
 #define NOFRAME 3
 #define NOFRAME_TRESHOLD 0xFFFF
@@ -17,7 +18,6 @@
 int sleepms;
 byte iobyte;
 byte bytebits[8];
-Servo servo;
 
 int stepperms = 5;
 byte steps8[] = {
@@ -50,10 +50,13 @@ void stepCclw(byte pin1, byte pin2, byte pin3, byte pin4) {
 }
 
 void setup() {
+	pinMode(STEP1, OUTPUT);
+	pinMode(STEP2, OUTPUT);
+	pinMode(STEP3, OUTPUT);
+	pinMode(STEP4, OUTPUT);
+	pinMode(BTX, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
-	servo.attach(SRV);
-	Serial.begin(9600);
 	sleepms = 5;
 	iobyte = 128;
 }
@@ -176,15 +179,17 @@ byte getByte() {
 }
 
 void loop() {
-	unsigned int angle;
+	byte i;
 	sendByte(iobyte);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
 	iobyte=getByte();
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
-	angle=((unsigned int)iobyte)*180/255;
-	Serial.print("servo angle: ");
-	Serial.println(angle);
-	servo.write(angle);
+	for(i=0; i<iobyte; i++) {
+		stepClkw(STEP1,STEP2,STEP3,STEP4);
+	}
+	for(i=0; i<iobyte; i++) {
+		stepCclw(STEP1,STEP2,STEP3,STEP4);
+	}
 }
