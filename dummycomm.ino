@@ -27,6 +27,7 @@ byte steps8[] = {
    LOW, HIGH, HIGH,  LOW,
    LOW,  LOW, HIGH,  LOW, 
    LOW,  LOW, HIGH, HIGH,
+   LOW,  LOW,  LOW, HIGH,
   HIGH,  LOW,  LOW, HIGH,
 };
 
