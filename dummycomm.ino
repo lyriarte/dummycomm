@@ -186,10 +186,14 @@ void loop() {
 	iobyte=getByte();
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
-	for(i=0; i<iobyte; i++) {
-		stepClkw(STEP1,STEP2,STEP3,STEP4);
+	if (iobyte < 128) {
+		for(i=0; i<iobyte; i++) {
+			stepClkw(STEP1,STEP2,STEP3,STEP4);
+		}
 	}
-	for(i=0; i<iobyte; i++) {
-		stepCclw(STEP1,STEP2,STEP3,STEP4);
+	else {
+		for(i=0; i<256-iobyte; i++) {
+			stepCclw(STEP1,STEP2,STEP3,STEP4);
+		}
 	}
 }
