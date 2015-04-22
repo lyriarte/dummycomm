@@ -9,7 +9,7 @@
 #define CARRIER 2
 #define ERROR -1
 
-int sleepms = 20;
+int sleepms = 5;
 byte bytebits[8];
 byte bytesbuf[256];
 byte hexled[] = {
@@ -155,7 +155,7 @@ void send1(int pin, int sleepms)
 void sendBytesbuf() {
 	int i;
 	digitalWrite(BTX, LOW);
-	for(i=0; i<32; i++) {
+	for(i=0; i<16; i++) {
 		sendCarrier(BTX, sleepms);
 	}
 	for(i=0; i<=bytesbuf[0]; i++) {
