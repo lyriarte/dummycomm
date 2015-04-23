@@ -1,0 +1,242 @@
+[
+  {
+    "comment": "state 0",
+    "outC": "00000001",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 1,
+        "inA": "01",
+        "inB": "0000"
+      },
+      {
+        "target": 9,
+        "inA": "10",
+        "inB": "0000"
+      }
+    ]
+  },
+  {
+    "comment": "state 1",
+    "outC": "10000000",
+    "outA": "1000",
+    "transitions": [
+      {
+        "target": 2,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 2",
+    "outC": "10000000",
+    "outA": "1100",
+    "transitions": [
+      {
+        "target": 3,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 3",
+    "outC": "10000000",
+    "outA": "0100",
+    "transitions": [
+      {
+        "target": 4,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 4",
+    "outC": "10000000",
+    "outA": "0110",
+    "transitions": [
+      {
+        "target": 5,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 5",
+    "outC": "10000000",
+    "outA": "0010",
+    "transitions": [
+      {
+        "target": 6,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 6",
+    "outC": "10000000",
+    "outA": "0011",
+    "transitions": [
+      {
+        "target": 7,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 7",
+    "outC": "10000000",
+    "outA": "0001",
+    "transitions": [
+      {
+        "target": 8,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 8",
+    "outC": "10000000",
+    "outA": "1001",
+    "transitions": [
+      {
+        "target": 0,
+        "inA": "00",
+        "inB": "0000"
+      },
+      {
+        "target": 0,
+        "inA": "11",
+        "inB": "0000"
+      }
+    ]
+  },
+  {
+    "comment": "state 9",
+    "outC": "11000000",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 10,
+        "inA": "00",
+        "inB": "0000"
+      },
+      {
+        "target": 0,
+        "inA": "11",
+        "inB": "0000"
+      }
+    ]
+  },
+  {
+    "comment": "state 10",
+    "outC": "11000001",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 11,
+        "inA": "01",
+        "inB": "0000"
+      },
+      {
+        "target": 0,
+        "inA": "11",
+        "inB": "0000"
+      }
+    ]
+  },
+  {
+    "comment": "state 11",
+    "outC": "10000001",
+    "outA": "0001",
+    "transitions": [
+      {
+        "target": 12,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 12",
+    "outC": "10000001",
+    "outA": "0011",
+    "transitions": [
+      {
+        "target": 13,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 13",
+    "outC": "10000001",
+    "outA": "0010",
+    "transitions": [
+      {
+        "target": 14,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 14",
+    "outC": "10000001",
+    "outA": "0110",
+    "transitions": [
+      {
+        "target": 15,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 15",
+    "outC": "10000001",
+    "outA": "0100",
+    "transitions": [
+      {
+        "target": 16,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 16",
+    "outC": "10000001",
+    "outA": "1100",
+    "transitions": [
+      {
+        "target": 17,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 17",
+    "outC": "10000001",
+    "outA": "1000",
+    "transitions": [
+      {
+        "target": 18,
+        "delay": 1
+      }
+    ]
+  },
+  {
+    "comment": "state 18",
+    "outC": "10000001",
+    "outA": "1001",
+    "transitions": [
+      {
+        "target": 10,
+        "inA": "00",
+        "inB": "0000"
+      },
+      {
+        "target": 0,
+        "inA": "11",
+        "inB": "0000"
+      }
+    ]
+  }
+]
+
