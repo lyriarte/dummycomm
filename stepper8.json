@@ -1,7 +1,7 @@
 [
   {
     "comment": "state 0",
-    "outC": "00000001",
+    "outC": "00000011",
     "outA": "0000",
     "transitions": [
       {
@@ -18,7 +18,7 @@
   },
   {
     "comment": "state 1",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "1000",
     "transitions": [
       {
@@ -29,7 +29,7 @@
   },
   {
     "comment": "state 2",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "1100",
     "transitions": [
       {
@@ -40,7 +40,7 @@
   },
   {
     "comment": "state 3",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "0100",
     "transitions": [
       {
@@ -51,7 +51,7 @@
   },
   {
     "comment": "state 4",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "0110",
     "transitions": [
       {
@@ -62,7 +62,7 @@
   },
   {
     "comment": "state 5",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "0010",
     "transitions": [
       {
@@ -73,7 +73,7 @@
   },
   {
     "comment": "state 6",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "0011",
     "transitions": [
       {
@@ -84,7 +84,7 @@
   },
   {
     "comment": "state 7",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "0001",
     "transitions": [
       {
@@ -95,24 +95,23 @@
   },
   {
     "comment": "state 8",
-    "outC": "10000000",
+    "outC": "10000010",
     "outA": "1001",
     "transitions": [
       {
         "target": 0,
-        "inA": "00",
+        "inA": "11",
         "inB": "0000"
       },
       {
         "target": 0,
-        "inA": "11",
-        "inB": "0000"
+        "delay": 1
       }
     ]
   },
   {
     "comment": "state 9",
-    "outC": "11000000",
+    "outC": "00000000",
     "outA": "0000",
     "transitions": [
       {
@@ -129,7 +128,7 @@
   },
   {
     "comment": "state 10",
-    "outC": "11000001",
+    "outC": "00000001",
     "outA": "0000",
     "transitions": [
       {
@@ -146,7 +145,7 @@
   },
   {
     "comment": "state 11",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "0001",
     "transitions": [
       {
@@ -157,7 +156,7 @@
   },
   {
     "comment": "state 12",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "0011",
     "transitions": [
       {
@@ -168,7 +167,7 @@
   },
   {
     "comment": "state 13",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "0010",
     "transitions": [
       {
@@ -179,7 +178,7 @@
   },
   {
     "comment": "state 14",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "0110",
     "transitions": [
       {
@@ -190,7 +189,7 @@
   },
   {
     "comment": "state 15",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "0100",
     "transitions": [
       {
@@ -201,7 +200,7 @@
   },
   {
     "comment": "state 16",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "1100",
     "transitions": [
       {
@@ -212,7 +211,7 @@
   },
   {
     "comment": "state 17",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "1000",
     "transitions": [
       {
@@ -223,20 +222,18 @@
   },
   {
     "comment": "state 18",
-    "outC": "10000001",
+    "outC": "10000000",
     "outA": "1001",
     "transitions": [
-      {
-        "target": 10,
-        "inA": "00",
-        "inB": "0000"
-      },
       {
         "target": 0,
         "inA": "11",
         "inB": "0000"
+      },
+      {
+        "target": 10,
+        "delay": 1
       }
     ]
   }
 ]
-
