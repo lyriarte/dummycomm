@@ -24,6 +24,16 @@ def strstate(state):
 	str = str + strbin(ntrans,4) + state.get('outA')
 	return str
 
+
+#### #### #### ####
+
+usage = "Usage: ez_auto.py <automaton.json> [--int]"
+
+if len(sys.argv) < 2 :
+	print usage
+	exit(1)
+
+
 filename = sys.argv[1]
 file = open(filename,'r')
 autotext = file.read()

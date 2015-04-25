@@ -23,6 +23,13 @@ hextable=[
 ]
 
 #### #### #### ####
+
+usage = "Usage: ez_byte.py <0..255> [--int]"
+
+if len(sys.argv) < 2 :
+	print usage
+	exit(1)
+
 value = int(sys.argv[1])
 
 if value >255:

@@ -13,6 +13,13 @@ import gpio_comm
 
 #### #### #### ####
 
+usage = "Usage: gpio_RX.py <pin>"
+
+if len(sys.argv) < 2 :
+	print usage
+	exit(1)
+
+
 pin = int(sys.argv[1])
 
 GPIO.setwarnings(False)

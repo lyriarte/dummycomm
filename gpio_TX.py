@@ -12,6 +12,14 @@ from gpio_comm import CARRIER, ERROR, sendCarrier, send0, send1
 import gpio_comm
 
 #### #### #### ####
+
+usage = "Usage: gpio_TX.py <pin> <bits> <ms>"
+
+if len(sys.argv) < 4 :
+	print usage
+	exit(1)
+
+
 pin = int(sys.argv[1])
 strbits = sys.argv[2]
 sleepms = int(sys.argv[3])
