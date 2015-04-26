@@ -94,6 +94,11 @@
     "outA": "1001",
     "transitions": [
       {
+        "target": 0,
+        "inA": "00",
+        "inB": "0000"
+      },
+      {
         "target": 1,
         "delay": 1
       }
