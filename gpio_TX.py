@@ -36,3 +36,5 @@ for c in strbits:
 # send 2 carrier frames to finish
 sendCarrier(pin, sleepms)
 sendCarrier(pin, sleepms)
+
+GPIO.cleanup()

@@ -4,7 +4,10 @@
 * one: 1110
 */
 
-#define BTX 13
+#include <Servo.h> 
+
+#define LED 13
+#define BTX 9
 #define BRX 8
 #define CARRIER 2
 #define NOFRAME 3
@@ -16,6 +19,7 @@ byte iobyte;
 byte bytebits[8];
 
 void setup() {
+	pinMode(LED, OUTPUT);
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
 	Serial.begin(9600);
@@ -129,7 +133,9 @@ byte getByte() {
 		while((frame = getFrame(BRX)) >= CARRIER) {
 			if (frame == NOFRAME) {
 				if (Serial.available() > 0) {
+					digitalWrite(LED, HIGH);
 					frame = Serial.parseInt();
+					digitalWrite(LED, LOW);
 					return frame;
 				}
 			}

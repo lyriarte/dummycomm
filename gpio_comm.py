@@ -28,17 +28,14 @@ def readFrame(cyclecount0, cyclecount1):
 
 # receive a frame
 def getFrame(pin):
-	starttime = time.time()
-	cyclecount1=0
-	cyclecount0=0
-	while GPIO.input(pin):
-		cyclecount1 = cyclecount1 + 1
-		if time.time() > starttime + 30 :
-			return ERROR
-	while not GPIO.input(pin):
-		cyclecount0 = cyclecount0 + 1
-                if time.time() > starttime + 30 :
-                        return ERROR
+	if not GPIO.input(pin):
+		GPIO.wait_for_edge(pin, GPIO.RISING)
+	start1 = time.time()
+	GPIO.wait_for_edge(pin, GPIO.FALLING)
+	start0 = time.time()
+	cyclecount1 = start0 - start1
+	GPIO.wait_for_edge(pin, GPIO.RISING)
+	cyclecount0 = time.time() - start0
 	return readFrame(cyclecount0, cyclecount1)
 
 

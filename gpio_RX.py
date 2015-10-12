@@ -31,3 +31,5 @@ while frame != CARRIER :
 		exit(1)
 	print frame
 	frame = getFrame(pin)
+
+GPIO.cleanup()
