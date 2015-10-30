@@ -7,15 +7,23 @@
 #define BTX 13
 #define ERROR -1
 
+#define INECHO 2
+#define TRIGGER 3
+#define ECHO_TIMEOUT 100000
+#define ECHO2CM(x) (x/60)
+
 int sleepms;
 byte iobyte;
 byte bytebits[8];
 
 void setup() {
 	pinMode(BTX, OUTPUT);
+	pinMode(INECHO, INPUT);
+	pinMode(TRIGGER, OUTPUT);
 	Serial.begin(9600);
 	sleepms = 5;
 	iobyte = 128;
+	digitalWrite(TRIGGER, LOW);
 }
 
 byte bytebitsGet() {
@@ -88,9 +96,21 @@ void sendByte(byte value) {
 	sendCarrier(BTX, sleepms);
 }
 
+void telemeterByte() {
+	unsigned long echoDuration;
+	unsigned long centimeter;
+	digitalWrite(TRIGGER, HIGH);
+	delayMicroseconds(10);
+	digitalWrite(TRIGGER, LOW);
+	echoDuration = pulseIn(INECHO, HIGH, ECHO_TIMEOUT);
+	centimeter = ECHO2CM(echoDuration);
+	iobyte = centimeter < 255 ? centimeter : 255;
+}
+
+
 void loop() {
 	sendByte(iobyte);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
-	delay(5000);
+	telemeterByte();
 }
