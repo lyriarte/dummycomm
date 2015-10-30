@@ -5,10 +5,6 @@
 */
 
 #define BTX 13
-#define BRX 8
-#define CARRIER 2
-#define NOFRAME 3
-#define NOFRAME_TRESHOLD 0xFFFF
 #define ERROR -1
 
 int sleepms;
@@ -17,7 +13,6 @@ byte bytebits[8];
 
 void setup() {
 	pinMode(BTX, OUTPUT);
-	pinMode(BRX, INPUT);
 	Serial.begin(9600);
 	sleepms = 5;
 	iobyte = 128;
@@ -44,35 +39,6 @@ void bytebitsSet(byte value) {
 			bytebits[i++] = 0;
 		value = value >> 1;
 	}
-}
-
-byte readFrame(unsigned int cyclecount0, unsigned int cyclecount1)
-{
-	if (cyclecount0 < cyclecount1) {
-		if (cyclecount1 < 2 * cyclecount0)
-			return 0; // c0 < c1 < 2.c0 : 1100
-		return 1; // 2.c0 < c1 : 1110
-	} else {
-		if (cyclecount0 < 2 * cyclecount1)
-			return 0; // c1 < c0 < 2.c1 : 1100
-		return CARRIER; // 2.c1 < c0 : 1000
-	}
-	return ERROR; // never reach
-}
-
-byte getFrame(int pin)
-{
-	unsigned int cyclecount1=0;
-	unsigned int cyclecount0=0;
-	while (digitalRead(pin) == HIGH) {
-		cyclecount1 = cyclecount1 + 1;
-	}
-	while (digitalRead(pin) == LOW) {
-		cyclecount0 = cyclecount0 + 1;
-		if (cyclecount0 == NOFRAME_TRESHOLD)
-			return NOFRAME;
-	}
-	return readFrame(cyclecount0, cyclecount1);
 }
 
 void sendBytebits()
@@ -122,29 +88,9 @@ void sendByte(byte value) {
 	sendCarrier(BTX, sleepms);
 }
 
-byte getByte() {
-	byte frame,i;
-	i=8;
-	while (i) {
-		while((frame = getFrame(BRX)) >= CARRIER) {
-			if (frame == NOFRAME) {
-				if (Serial.available() > 0) {
-					frame = Serial.parseInt();
-					return frame;
-				}
-			}
-			i=8;
-		}
-		bytebits[--i] = frame;
-	}
-	return bytebitsGet();
-}
-
 void loop() {
 	sendByte(iobyte);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
-	iobyte=getByte();
-	Serial.print("byte read: ");
-	Serial.println(iobyte);
+	delay(5000);
 }
