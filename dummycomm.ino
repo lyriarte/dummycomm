@@ -4,18 +4,41 @@
 * one: 1110
 */
 
+
+/* 
+ * single wire dummycomm
+ */
 #define BTX 13
 #define ERROR -1
 
+/* 
+ * ultra sonic telemeter mesure
+ */
 #define INECHO 2
 #define TRIGGER 3
 #define ECHO_TIMEOUT 100000
 #define ECHO2CM(x) (x/60)
+#define MAX_CM 1000
 
+/* 
+ * control loop frequency
+ */
+#define POLL 1000
+
+
+/* 
+ * global variables
+ */
+unsigned long mesureCm;
 int sleepms;
 byte iobyte;
 byte bytebits[8];
 
+
+
+/* 
+ * functions
+ */
 void setup() {
 	pinMode(BTX, OUTPUT);
 	pinMode(INECHO, INPUT);
@@ -96,21 +119,30 @@ void sendByte(byte value) {
 	sendCarrier(BTX, sleepms);
 }
 
-void telemeterByte() {
+void telemeterMesure() {
 	unsigned long echoDuration;
-	unsigned long centimeter;
 	digitalWrite(TRIGGER, HIGH);
 	delayMicroseconds(10);
 	digitalWrite(TRIGGER, LOW);
 	echoDuration = pulseIn(INECHO, HIGH, ECHO_TIMEOUT);
-	centimeter = ECHO2CM(echoDuration);
-	iobyte = centimeter < 255 ? centimeter : 255;
+	mesureCm = echoDuration ? ECHO2CM(echoDuration) : MAX_CM;
+	iobyte = mesureCm < 255 ? mesureCm : 255;
 }
 
 
 void loop() {
+	/* control loop frequency */
+	unsigned long timeLoopStart;
+	unsigned long timeLoop;
+	timeLoopStart = millis();
+	/* telemeter mesure */
+	telemeterMesure();
+	/* dummy comm */
 	sendByte(iobyte);
-	Serial.print("byte sent: ");
-	Serial.println(iobyte);
-	telemeterByte();
+	Serial.print("mesure: ");
+	Serial.println(mesureCm);
+	/* control loop frequency */
+	timeLoop = millis() - timeLoopStart;
+	if (timeLoop < POLL)
+		delay(POLL - timeLoop);
 }
