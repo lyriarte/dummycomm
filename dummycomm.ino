@@ -13,10 +13,13 @@
  * Constants
  * **** **** **** **** **** ****/
 
+#define BPS_HOST 9600
+#define BPS_WIFI 9600
+
 /* 
  * software serial comm to esp-01
  */
-#define COMMS_BUFFER_SIZE 256
+#define COMMS_BUFFER_SIZE 1024
 #define TX2 11
 #define RX2 10
 
@@ -75,8 +78,8 @@ void setup() {
 	pinMode(TRIGGER, OUTPUT);
 	ssid = passwd = host = uri = NULL;
 	connected = false;
-	Serial.begin(9600);
-	serial2.begin(9600);
+	Serial.begin(BPS_HOST);
+	serial2.begin(BPS_WIFI);
 	sleepms = 5;
 	iobyte = 128;
 	digitalWrite(TRIGGER, LOW);
