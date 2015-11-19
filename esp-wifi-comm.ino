@@ -17,13 +17,6 @@
 
 
 /* 
- * single wire dummycomm
- */
-#define BTX 2
-#define BRX 0
-#define ERROR -1
-
-/* 
  * automaton states
  */
 enum {
@@ -34,11 +27,13 @@ enum {
 	IN_HOST,
 	IN_PORT,
 	IN_URI,
+	IN_QUERY,
 	OUT_PAGE,
 	OUT_CLIENT
 };
 
-
+#define CLIENT_MODE_GET 0
+#define CLIENT_MODE_QUERY 1
 
 /* **** **** **** **** **** ****
  * Global variables
@@ -48,28 +43,7 @@ enum {
  * automaton status
  */
 int currentState;
-
-/* 
- * dummycomm IO
- */
-int sleepms = 5;
-byte bytebits[8];
-byte bytesbuf[256];
-
-
-#define HELLO_SIZE 10
-byte hello[] = {
-142,
-16,
-129,
-4,
-240,
-16,
-129,
-8,
-1,
-0
-};
+int clientMode;
 
 /* 
  * serial comms buffer
@@ -92,19 +66,11 @@ WiFiClient wifiClient;
  * setup
  */
 void setup() {
-	byte i=0;
-	pinMode(BTX, OUTPUT);
 	currentState = START;
+	clientMode = CLIENT_MODE_GET;
 	ssid = passwd = host = uri = NULL;
 	port = 80;
 	Serial.begin(BPS_HOST);
-	bytesbuf[0]=HELLO_SIZE;
-	while(i<bytesbuf[0]) {
-		bytesbuf[i+1]=hello[i];
-		i++;
-	}
-	Serial.println("Sending hello sequence");
-	sendBytesbuf();
 }
 
 /* 
@@ -166,7 +132,7 @@ int stateTransition(int currentState) {
 		case IN_ACTION:
 			if (!(userInput = userIO("Action: ",true)))
 				break;
-			if (!strcmp(userInput,"GET")) {
+			if (!strcmp(userInput,"GET") || !strcmp(userInput,"QUERY")) {
 				if (WiFi.status() != WL_CONNECTED) {
 #ifdef DEBUG
 					Serial.print("Connecting to SSID: ");
@@ -181,6 +147,10 @@ int stateTransition(int currentState) {
 					}
 				}
 				newState = IN_HOST;
+				if (!strcmp(userInput,"GET"))
+					clientMode = CLIENT_MODE_GET;
+				else if (!strcmp(userInput,"QUERY"))
+					clientMode = CLIENT_MODE_QUERY;
 			}
 			else if (!strcmp(userInput,"AP"))
 				newState = OUT_CLIENT;
@@ -230,7 +200,10 @@ int stateTransition(int currentState) {
 		case OUT_PAGE:
 			while(wifiClient.available())
 				Serial.print(wifiClient.readStringUntil('\r'));
-			newState = IN_ACTION;
+			if (clientMode == CLIENT_MODE_GET)
+				newState = IN_ACTION;
+			else if (clientMode == CLIENT_MODE_QUERY)
+				newState = IN_URI;
 			break;
 
 		case OUT_CLIENT:
@@ -251,82 +224,6 @@ int stateTransition(int currentState) {
 }
 
 /* 
- * single wire dummycomm
- */
-byte bytebitsGet() {
-	byte value=0;
-	byte power=1;
-	byte i=0;
-	while (i<8) {
-		if (bytebits[i++])
-			value = value + power;
-		power = power * 2;
-	}
-	return value;
-}
-
-void bytebitsSet(byte value) {
-	byte i=0;
-	while (i<8) {
-		if (value & 1)
-			bytebits[i++] = 1;
-		else
-			bytebits[i++] = 0;
-		value = value >> 1;
-	}
-}
-
-void sendBytebits()
-{
-	byte i=8;
-	while (i) {
-		if (bytebits[--i])
-			send1(BTX, sleepms);
-		else
-			send0(BTX, sleepms);
-	}
-}
-
-void sendCarrier(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(sleepms);
-	digitalWrite(pin, LOW);
-	delay(3 * sleepms);	
-}
-
-void send0(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(2 * sleepms);
-	digitalWrite(pin, LOW);
-	delay(2 * sleepms);	
-}
-
-void send1(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(3 * sleepms);
-	digitalWrite(pin, LOW);
-	delay(sleepms);	
-}
-
-void sendBytesbuf() {
-	byte i;
-	digitalWrite(BTX, LOW);
-	for(i=0; i<16; i++) {
-		sendCarrier(BTX, sleepms);
-	}
-	for(i=0; i<=bytesbuf[0]; i++) {
-		bytebitsSet(bytesbuf[i]);
-		sendBytebits();
-	}
-	sendCarrier(BTX, sleepms);
-	sendCarrier(BTX, sleepms);
-}
-
-
-/* 
  * main loop
  */
 void loop() {
@@ -334,7 +231,7 @@ void loop() {
 	Serial.print("currentState: ");
 	Serial.println(currentState);
 #else
-	Serial.println();
+  Serial.println();
 #endif
 	currentState = stateTransition(currentState);
 }
