@@ -174,7 +174,7 @@ boolean wifiConnect() {
 	input = espInput(passwd);
 	if (!suffix(input,"Action: "))
 		return false;
-	input = espInput("GET");
+	input = espInput("QUERY");
 	if (!suffix(input,"Host: "))
 		return false;
 	input = espInput(host);
@@ -193,14 +193,7 @@ boolean wifiSendMesure() {
 	strcpy(commsBuffer, uri);
 	strcat(commsBuffer, "?mesure=");
 	itoa(mesureCm, commsBuffer + strlen(commsBuffer), 10);
-	if (! suffix(espInput(commsBuffer),"Action: "))
-		return false;
-	if (! suffix(espInput("GET"),"Host: "))
-		return false;
-	if (! suffix(espInput(host),"Port: "))
-		return false;
-	serial2.print(port);
-	if (!suffix(espInput(NULL),"URI: "))
+	if (!suffix(espInput(commsBuffer),"URI: "))
 		return false;
 	return true;
 }
