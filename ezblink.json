@@ -2,7 +2,7 @@
   {
     "comment": "state 0",
     "outC": "11111111",
-    "outA": "0000",
+    "outA": "1111",
     "transitions": [
       {
         "target": 1,
@@ -23,12 +23,12 @@
   {
     "comment": "state 1",
     "outC": "00000000",
-    "outA": "1111"
+    "outA": "0001"
   },
   {
     "comment": "state 2",
     "outC": "10000000",
-    "outA": "0000",
+    "outA": "0010",
     "transitions": [
       {
         "target": 3,
@@ -39,7 +39,7 @@
   {
     "comment": "state 3",
     "outC": "01000000",
-    "outA": "0000",
+    "outA": "0100",
     "transitions": [
       {
         "target": 4,
@@ -50,7 +50,7 @@
   {
     "comment": "state 4",
     "outC": "00100000",
-    "outA": "0000",
+    "outA": "1000",
     "transitions": [
       {
         "target": 5,
@@ -61,7 +61,7 @@
   {
     "comment": "state 5",
     "outC": "00010000",
-    "outA": "0000",
+    "outA": "1001",
     "transitions": [
       {
         "target": 6,
@@ -72,7 +72,7 @@
   {
     "comment": "state 6",
     "outC": "00001000",
-    "outA": "0000",
+    "outA": "1010",
     "transitions": [
       {
         "target": 7,
@@ -83,7 +83,7 @@
   {
     "comment": "state 7",
     "outC": "00000100",
-    "outA": "0000",
+    "outA": "1100",
     "transitions": [
       {
         "target": 8,
@@ -94,7 +94,7 @@
   {
     "comment": "state 8",
     "outC": "00000010",
-    "outA": "0000",
+    "outA": "1101",
     "transitions": [
       {
         "target": 9,
@@ -105,7 +105,7 @@
   {
     "comment": "state 9",
     "outC": "00000001",
-    "outA": "0000",
+    "outA": "1110",
     "transitions": [
       {
         "target": 0,
@@ -114,4 +114,5 @@
     ]
   }
 ]
+
 
