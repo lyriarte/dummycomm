@@ -1,0 +1,29 @@
+[
+  {
+    "comment": "state 0",
+    "outC": "10001110",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 1,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "state 1",
+    "outC": "11110000",
+    "outA": "0000",
+    "transitions": [
+      {
+        "target": 2,
+        "delay": 64
+      }
+    ]
+  },
+  {
+    "comment": "state 2",
+    "outC": "00000001",
+    "outA": "0000"
+  }
+]

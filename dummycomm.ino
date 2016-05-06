@@ -13,6 +13,22 @@
  * Constants
  * **** **** **** **** **** ****/
 
+#define BPS_HOST 9600
+#define BPS_WIFI 9600
+
+/* 
+ * serial comm to host
+ */
+#define HOST_SERIAL_STEP 200
+#define HOST_SERIAL_TIMEOUT 10000
+
+#define SSID "SSID"
+#define PASSWD "password"
+#define HOST "192.168.0.1"
+#define PORT 1880
+#define URI "/query"
+
+
 /* 
  * software serial comm to esp-01
  */
@@ -53,8 +69,8 @@ SoftwareSerial serial2(RX2, TX2);
 void setup() {
 	ssid = passwd = host = uri = NULL;
 	connected = false;
-	Serial.begin(9600);
-	serial2.begin(9600);
+	Serial.begin(BPS_HOST);
+	serial2.begin(BPS_WIFI);
 	sleepms = 5;
 }
 
@@ -80,6 +96,19 @@ void saveString(char * srcStr, char ** dstStrP) {
 	*dstStrP = strdup(srcStr);
 }
 
+boolean hostSerialAvailable(int timeout) {
+	unsigned long startTs;
+	unsigned long stopTs;
+	startTs = millis();
+	while(!Serial.available()) {
+		delay(HOST_SERIAL_STEP);
+		stopTs = millis();
+		if (stopTs > startTs + timeout)
+			return false;
+	}
+	return true;
+}
+
 void wifiSettingsCleanup() {
 	commsBuffer[0] = 0;
 	if (ssid) free(ssid);
@@ -89,9 +118,22 @@ void wifiSettingsCleanup() {
 	ssid = passwd = host = uri = NULL;
 }
 
+void wifiSettingsDefault() {
+	saveString(SSID, &ssid);
+	saveString(PASSWD, &passwd);
+	saveString(HOST, &host);
+	port = PORT;
+	saveString(URI, &uri);
+}
+
 boolean wifiSettingsInput() {
+	Serial.print("SSID: ");
+	if (!hostSerialAvailable(HOST_SERIAL_TIMEOUT)) {
+		wifiSettingsDefault();
+		return true;
+	}
 	char * input = NULL;
-	if (!(input = userInput("SSID: ")))
+	if (!(input = userInput("")))
 		return false;
 	saveString(input, &ssid);
 	if (!(input = userInput("Passwd: ")))
