@@ -16,7 +16,7 @@
 /* 
  * software serial comm to esp-01
  */
-#define COMMS_BUFFER_SIZE 256
+#define COMMS_BUFFER_SIZE 1024
 #define TX2 11
 #define RX2 10
 
