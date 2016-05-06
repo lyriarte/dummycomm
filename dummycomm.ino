@@ -21,21 +21,6 @@
 #define RX2 10
 
 /* 
- * single wire dummycomm
- */
-#define BTX 13
-#define ERROR -1
-
-/* 
- * ultra sonic telemeter mesure
- */
-#define INECHO 2
-#define TRIGGER 3
-#define ECHO_TIMEOUT 100000
-#define ECHO2CM(x) (x/60)
-#define MAX_CM 1000
-
-/* 
  * control loop frequency
  */
 #define POLL 1000
@@ -46,11 +31,7 @@
  * Global variables
  * **** **** **** **** **** ****/
 
-unsigned long mesureCm;
-
 int sleepms;
-byte iobyte;
-byte bytebits[8];
 
 char commsBuffer[COMMS_BUFFER_SIZE];
 
@@ -104,92 +85,6 @@ void saveString(char * srcStr, char ** dstStrP) {
 }
 
 
-/* 
- * single wire dummycomm
- */
-byte bytebitsGet() {
-	byte value=0;
-	byte power=1;
-	byte i=0;
-	while (i<8) {
-		if (bytebits[i++])
-			value = value + power;
-		power = power * 2;
-	}
-	return value;
-}
-
-void bytebitsSet(byte value) {
-	byte i=0;
-	while (i<8) {
-		if (value & 1)
-			bytebits[i++] = 1;
-		else
-			bytebits[i++] = 0;
-		value = value >> 1;
-	}
-}
-
-void sendBytebits()
-{
-	byte i=8;
-	while (i) {
-		if (bytebits[--i])
-			send1(BTX, sleepms);
-		else
-			send0(BTX, sleepms);
-	}
-}
-
-void sendCarrier(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(sleepms);
-	digitalWrite(pin, LOW);
-	delay(3 * sleepms);	
-}
-
-void send0(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(2 * sleepms);
-	digitalWrite(pin, LOW);
-	delay(2 * sleepms);	
-}
-
-void send1(int pin, int sleepms)
-{
-	digitalWrite(pin, HIGH);
-	delay(3 * sleepms);
-	digitalWrite(pin, LOW);
-	delay(sleepms);	
-}
-
-void sendByte(byte value) {
-	byte i;
-	digitalWrite(BTX, LOW);
-	for(i=0; i<16; i++) {
-		sendCarrier(BTX, sleepms);
-	}
-	bytebitsSet(value);
-	sendBytebits();
-	sendCarrier(BTX, sleepms);
-	sendCarrier(BTX, sleepms);
-}
-
-
-/* 
- * ultra sonic telemeter mesure
- */
-void telemeterMesure() {
-	unsigned long echoDuration;
-	digitalWrite(TRIGGER, HIGH);
-	delayMicroseconds(10);
-	digitalWrite(TRIGGER, LOW);
-	echoDuration = pulseIn(INECHO, HIGH, ECHO_TIMEOUT);
-	mesureCm = echoDuration ? ECHO2CM(echoDuration) : MAX_CM;
-	iobyte = mesureCm < 255 ? mesureCm : 255;
-}
 
 
 /* 
@@ -200,12 +95,6 @@ void loop() {
 	unsigned long timeLoopStart;
 	unsigned long timeLoop;
 	timeLoopStart = millis();
-	/* telemeter mesure */
-	telemeterMesure();
-	/* dummy comm */
-	sendByte(iobyte);
-	Serial.print("mesure: ");
-	Serial.println(mesureCm);
 	/* control loop frequency */
 	timeLoop = millis() - timeLoopStart;
 	if (timeLoop < POLL)
