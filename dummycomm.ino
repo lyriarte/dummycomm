@@ -1,28 +1,54 @@
-/*** 4-ticks transmission frames
-* carrier : 1000
-* zero: 1100
-* one: 1110
-*/
+/*
+ * Copyright (c) 2016, Luc Yriarte
+ * License: BSD <http://www.opensource.org/licenses/bsd-license.php>
+ */
 
-#define BTX 13
-#define BRX 8
+
+#include <ESP8266WiFi.h>
+
+
+
+/* **** **** **** **** **** ****
+ * Constants
+ * **** **** **** **** **** ****/
+
+/* 
+ * single wire dummycomm
+ */
+#define DUMMYCOMM_TIMEOUT 5000
+#define DUMMYCOMM_STEP 2
+#define BTX 2
+#define BRX 0
 #define CARRIER 2
-#define NOFRAME 3
-#define NOFRAME_TRESHOLD 0xFFFF
 #define ERROR -1
 
+/* 
+ * dummycomm IO
+ */
 int sleepms;
 byte iobyte;
 byte bytebits[8];
 
+
+
+/* **** **** **** **** **** ****
+ * Functions
+ * **** **** **** **** **** ****/
+
+/* 
+ * setup
+ */
 void setup() {
 	pinMode(BTX, OUTPUT);
-	pinMode(BRX, INPUT);
 	Serial.begin(9600);
 	sleepms = 5;
 	iobyte = 128;
 }
 
+
+/* 
+ * single wire dummycomm
+ */
 byte bytebitsGet() {
 	byte value=0;
 	byte power=1;
@@ -46,7 +72,7 @@ void bytebitsSet(byte value) {
 	}
 }
 
-byte readFrame(unsigned int cyclecount0, unsigned int cyclecount1)
+int readFrame(int cyclecount0, int cyclecount1)
 {
 	if (cyclecount0 < cyclecount1) {
 		if (cyclecount1 < 2 * cyclecount0)
@@ -60,17 +86,26 @@ byte readFrame(unsigned int cyclecount0, unsigned int cyclecount1)
 	return ERROR; // never reach
 }
 
-byte getFrame(int pin)
+int getFrame(int pin, int timeout)
 {
-	unsigned int cyclecount1=0;
-	unsigned int cyclecount0=0;
+	unsigned long cyclecount1=0;
+	unsigned long cyclecount0=0;
+	unsigned long startTs;
+	unsigned long stopTs;
+	startTs = millis();
 	while (digitalRead(pin) == HIGH) {
+		delay(DUMMYCOMM_STEP);
+		stopTs = millis();
+		if (stopTs > startTs + timeout)
+			return ERROR;
 		cyclecount1 = cyclecount1 + 1;
 	}
 	while (digitalRead(pin) == LOW) {
+		delay(DUMMYCOMM_STEP);
+		stopTs = millis();
+		if (stopTs > startTs + timeout)
+			return ERROR;
 		cyclecount0 = cyclecount0 + 1;
-		if (cyclecount0 == NOFRAME_TRESHOLD)
-			return NOFRAME;
 	}
 	return readFrame(cyclecount0, cyclecount1);
 }
@@ -122,29 +157,34 @@ void sendByte(byte value) {
 	sendCarrier(BTX, sleepms);
 }
 
-byte getByte() {
-	byte frame,i;
+boolean receiveByte(int timeout) {
+	int frame,i;
 	i=8;
 	while (i) {
-		while((frame = getFrame(BRX)) >= CARRIER) {
-			if (frame == NOFRAME) {
-				if (Serial.available() > 0) {
-					frame = Serial.parseInt();
-					return frame;
-				}
-			}
+		while((frame = getFrame(BRX, timeout)) == CARRIER) {
 			i=8;
 		}
+		if (frame == ERROR)
+			return false;
 		bytebits[--i] = frame;
 	}
-	return bytebitsGet();
+	return true;
 }
 
+
+/* 
+ * main loop
+ */
 void loop() {
 	sendByte(iobyte);
 	Serial.print("byte sent: ");
 	Serial.println(iobyte);
-	iobyte=getByte();
+	while (!receiveByte(DUMMYCOMM_TIMEOUT)) {
+		Serial.print(".");
+	}
+	Serial.println();
+	iobyte=bytebitsGet();
 	Serial.print("byte read: ");
 	Serial.println(iobyte);
+	Serial.println();
 }
