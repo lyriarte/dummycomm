@@ -12,6 +12,15 @@
  * Constants
  * **** **** **** **** **** ****/
 
+#define BPS_HOST 9600
+#define COMMS_BUFFER_SIZE 4096
+
+/* 
+ * serial comm to host
+ */
+#define HOST_SERIAL_STEP 200
+#define HOST_SERIAL_TIMEOUT 15000
+
 /* 
  * single wire dummycomm
  */
@@ -23,12 +32,40 @@
 #define ERROR -1
 
 /* 
+ * automaton states
+ */
+enum {
+	START,
+	CLEANUP,
+	COMM_TX
+};
+
+/* **** **** **** **** **** ****
+ * Global variables
+ * **** **** **** **** **** ****/
+
+/* 
+ * automaton status
+ */
+int currentState;
+
+
+/* 
  * dummycomm IO
  */
 int sleepms;
 byte iobyte;
 byte bytebits[8];
 
+/* 
+ * serial comms buffer
+ */
+char commsBuffer[COMMS_BUFFER_SIZE];
+
+/* 
+ * Commands
+ */
+char *cmd;
 
 
 /* **** **** **** **** **** ****
@@ -45,6 +82,87 @@ void setup() {
 	iobyte = 128;
 }
 
+/* 
+ * userIO
+ */
+char * userInput(char * message) {
+	char * input = NULL;
+	int nread = 0;
+	Serial.print(message);
+	while (!(nread = Serial.readBytes(commsBuffer, COMMS_BUFFER_SIZE)));
+	if (nread == COMMS_BUFFER_SIZE)
+		return input; // buffer overflow
+	commsBuffer[nread] = 0;
+	input = commsBuffer;
+	return input;
+}
+
+void saveString(char * srcStr, char ** dstStrP) {
+	if (*dstStrP)
+		free(*dstStrP);
+	*dstStrP = strdup(srcStr);
+}
+
+boolean hostSerialAvailable(int timeout) {
+	unsigned long startTs;
+	unsigned long stopTs;
+	startTs = millis();
+	while(!Serial.available()) {
+		delay(HOST_SERIAL_STEP);
+		stopTs = millis();
+		if (stopTs > startTs + timeout)
+			return false;
+	}
+	return true;
+}
+
+
+/* 
+ * automaton
+ */
+int stateTransition(int currentState) {
+	int index = 0;
+	int newState = CLEANUP;
+	char * input = NULL;
+	switch (currentState) {
+		case START:
+			if (!(input = userInput("CMD: ")))
+				break;
+			saveString(input, &cmd);
+			newState = CLEANUP;
+			if (!strcmp(cmd,"TX"))
+				newState = COMM_TX;
+			break;
+
+		case COMM_TX:
+			if (!(input = userInput("BYTE: ")))
+				break;
+			iobyte = (byte) atoi(input);
+			sendByte(iobyte);
+			newState = CLEANUP;
+			break;
+
+		case CLEANUP:
+			while(Serial.readBytes(commsBuffer, COMMS_BUFFER_SIZE));
+			commsBuffer[0] = 0;
+			Serial.flush();
+			if (cmd) free(cmd);
+			cmd = NULL;
+			newState = START;
+			break;
+
+		default:
+			newState = CLEANUP;
+			break;
+	}
+#ifdef DEBUG
+	if (input) {
+		Serial.print("====> ");
+		Serial.println(input);
+	}
+#endif
+	return newState;
+}
 
 /* 
  * single wire dummycomm
@@ -176,15 +294,11 @@ boolean receiveByte(int timeout) {
  * main loop
  */
 void loop() {
-	sendByte(iobyte);
-	Serial.print("byte sent: ");
-	Serial.println(iobyte);
-	while (!receiveByte(DUMMYCOMM_TIMEOUT)) {
-		Serial.print(".");
-	}
+#ifdef DEBUG
+	Serial.print("currentState: ");
+	Serial.println(currentState);
+#else
 	Serial.println();
-	iobyte=bytebitsGet();
-	Serial.print("byte read: ");
-	Serial.println(iobyte);
-	Serial.println();
+#endif
+	currentState = stateTransition(currentState);
 }
