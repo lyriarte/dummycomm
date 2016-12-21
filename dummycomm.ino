@@ -25,8 +25,8 @@
 #define SSID "SSID"
 #define PASSWD "password"
 #define HOST "192.168.0.1"
-#define PORT 1880
-#define URI "/query"
+#define PORT 80
+#define URI "/index.html"
 
 
 /* 
@@ -136,13 +136,13 @@ boolean wifiSettingsInput() {
 	if (!(input = userInput("")))
 		return false;
 	saveString(input, &ssid);
-	if (!(input = userInput("Passwd: ")))
+	if (!(input = userInput("PASSWD: ")))
 		return false;
 	saveString(input, &passwd);
-	if (!(input = userInput("Host: ")))
+	if (!(input = userInput("HOST: ")))
 		return false;
 	saveString(input, &host);
-	if (!(input = userInput("Port: ")))
+	if (!(input = userInput("PORT: ")))
 		return false;
 	port = atoi(input);
 	if (!(input = userInput("URI: ")))
@@ -179,23 +179,23 @@ boolean wifiConnect() {
 	boolean chatReady = false;
 	Serial.println("Connecting...");
 	while (!chatReady) {
-		input = espInput("Hello...");
+		input = espInput("SSID");
 		if (suffix(input,"SSID: "))
 			chatReady = true;
 	}
 	input = espInput(ssid);
-	if (!suffix(input,"Passwd: "))
+	if (!suffix(input,"PASSWD: "))
 		return false;
 	input = espInput(passwd);
-	if (!suffix(input,"Action: "))
+	if (!suffix(input,"ACTION: "))
 		return false;
 	input = espInput("GET");
-	if (!suffix(input,"Host: "))
+	if (!suffix(input,"HOST: "))
 		return false;
 	input = espInput(host);
-	if (!suffix(commsBuffer,"Port: "))
+	if (!suffix(commsBuffer,"PORT: "))
 		return false;
-	Serial.print("Sending Port: ");
+	Serial.print("Sending PORT: ");
 	Serial.println(port);
 	serial2.print(port);
 	input = espInput(NULL);
@@ -206,11 +206,11 @@ boolean wifiConnect() {
 
 boolean wifiSendUri() {
 	strcpy(commsBuffer, uri);
-	if (! suffix(espInput(commsBuffer),"Action: "))
+	if (! suffix(espInput(commsBuffer),"ACTION: "))
 		return false;
-	if (! suffix(espInput("GET"),"Host: "))
+	if (! suffix(espInput("GET"),"HOST: "))
 		return false;
-	if (! suffix(espInput(host),"Port: "))
+	if (! suffix(espInput(host),"PORT: "))
 		return false;
 	serial2.print(port);
 	if (!suffix(espInput(NULL),"URI: "))
