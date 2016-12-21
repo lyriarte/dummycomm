@@ -37,7 +37,8 @@
 enum {
 	START,
 	CLEANUP,
-	COMM_TX
+	COMM_TX,
+	COMM_RX
 };
 
 /* **** **** **** **** **** ****
@@ -129,9 +130,10 @@ int stateTransition(int currentState) {
 			if (!(input = userInput("CMD: ")))
 				break;
 			saveString(input, &cmd);
-			newState = CLEANUP;
 			if (!strcmp(cmd,"TX"))
 				newState = COMM_TX;
+			else if (!strcmp(cmd,"RX"))
+				newState = COMM_RX;
 			break;
 
 		case COMM_TX:
@@ -139,7 +141,16 @@ int stateTransition(int currentState) {
 				break;
 			iobyte = (byte) atoi(input);
 			sendByte(iobyte);
-			newState = CLEANUP;
+			break;
+
+		case COMM_RX:
+			iobyte = 0xff;
+			if (receiveByte(DUMMYCOMM_TIMEOUT)) {
+				iobyte = bytebitsGet();
+				Serial.println(iobyte);
+			}
+			else
+				Serial.println("TIMEOUT");
 			break;
 
 		case CLEANUP:
