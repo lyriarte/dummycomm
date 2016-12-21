@@ -21,6 +21,16 @@
 #define HOST_SERIAL_STEP 200
 #define HOST_SERIAL_TIMEOUT 15000
 
+
+/*
+ * http buffer content
+ */
+#define HEADER_END "Connection: close"
+#define HEADER_END_LEN 17
+
+#define HTTP_REQ_STEP 200
+#define HTTP_REQ_TIMEOUT 2000
+
 /* 
  * single wire dummycomm
  */
@@ -37,9 +47,19 @@
 enum {
 	START,
 	CLEANUP,
+	IN_SSID,
+ 	IN_PASSWD,
+	IN_ACTION,
+	IN_HOST,
+	IN_PORT,
+	IN_URI,
+	OUT_PAGE,
 	COMM_TX,
 	COMM_RX
 };
+
+#define CLIENT_MODE_GET 0
+#define CLIENT_MODE_QUERY 1
 
 /* **** **** **** **** **** ****
  * Global variables
@@ -49,7 +69,7 @@ enum {
  * automaton status
  */
 int currentState;
-
+int clientMode;
 
 /* 
  * dummycomm IO
@@ -62,6 +82,13 @@ byte bytebits[8];
  * serial comms buffer
  */
 char commsBuffer[COMMS_BUFFER_SIZE];
+
+/* 
+ * WiFi comms
+ */
+char *ssid, *passwd, *host, *uri, *content, *size;
+int port;
+WiFiClient wifiClient;
 
 /* 
  * Commands
@@ -77,8 +104,13 @@ char *cmd;
  * setup
  */
 void setup() {
+	byte i=0;
 	pinMode(BTX, OUTPUT);
-	Serial.begin(9600);
+	currentState = START;
+	clientMode = CLIENT_MODE_GET;
+	ssid = passwd = host = uri = content = size = NULL;
+	port = 80;
+	Serial.begin(BPS_HOST);
 	sleepms = 5;
 	iobyte = 128;
 }
@@ -117,6 +149,34 @@ boolean hostSerialAvailable(int timeout) {
 	return true;
 }
 
+void wifiConnect() {
+	if (WiFi.status() == WL_CONNECTED)
+		return;
+#ifdef DEBUG
+	Serial.print("Connecting to SSID: ");
+	Serial.print(ssid);
+	Serial.print(" passwd: ");
+	Serial.println(passwd);
+#endif
+	WiFi.begin(ssid, passwd);
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		Serial.print(".");
+	}
+}
+
+void waitWifiClientAvailable(int timeout) {
+	unsigned long httpReqStartTs;
+	unsigned long httpReqStopTs;
+	httpReqStartTs = millis();
+	while(!wifiClient.available()) {
+		delay(HTTP_REQ_STEP);
+		httpReqStopTs = millis();
+		if (httpReqStopTs > httpReqStartTs + timeout)
+			break;
+	}
+}
+
 
 /* 
  * automaton
@@ -134,6 +194,8 @@ int stateTransition(int currentState) {
 				newState = COMM_TX;
 			else if (!strcmp(cmd,"RX"))
 				newState = COMM_RX;
+			else if (!strcmp(cmd,"SSID"))
+				newState = IN_SSID;
 			break;
 
 		case COMM_TX:
@@ -157,9 +219,93 @@ int stateTransition(int currentState) {
 			while(Serial.readBytes(commsBuffer, COMMS_BUFFER_SIZE));
 			commsBuffer[0] = 0;
 			Serial.flush();
+			if (ssid) free(ssid);
+			if (passwd) free(passwd);
+			if (host) free(host);
+			if (uri) free(uri);
+			if (content) free(content);
+			if (size) free(size);
 			if (cmd) free(cmd);
-			cmd = NULL;
+			ssid = passwd = host = uri = content = size = cmd = NULL;
 			newState = START;
+			break;
+
+		case IN_SSID:
+			if (!(input = userInput("SSID: ")))
+				break;
+			saveString(input, &ssid);
+			newState = IN_PASSWD;
+			break;
+
+		case IN_PASSWD:
+			if (!(input = userInput("PASSWD: ")))
+				break;
+			saveString(input, &passwd);
+			newState = IN_ACTION;
+			break;
+
+		case IN_ACTION:
+			if (!(input = userInput("ACTION: ")))
+				break;
+			if (!strcmp(input,"GET") || !strcmp(input,"QUERY")) {
+				wifiConnect();
+				newState = IN_HOST;
+				if (!strcmp(input,"GET"))
+					clientMode = CLIENT_MODE_GET;
+				else if (!strcmp(input,"QUERY"))
+					clientMode = CLIENT_MODE_QUERY;
+			}
+			break;
+
+		case IN_HOST:
+			if (!(input = userInput("HOST: ")))
+				break;
+			saveString(input, &host);
+			newState = IN_PORT;
+			break;
+
+		case IN_PORT:
+			if (!(input = userInput("PORT: ")))
+				break;
+			port = atoi(input);
+#ifdef DEBUG
+			Serial.print("Connecting to ");
+			Serial.print(host);
+			Serial.print(":");
+			Serial.println(port);
+#endif
+			if (wifiClient.connect(host, port))
+				newState = IN_URI;
+			break;
+
+		case IN_URI:
+			if (!(input = userInput("URI: ")))
+				break;
+			saveString(input, &uri);
+			if (WiFi.status() != WL_CONNECTED
+			|| !wifiClient.connected())
+				break;
+			memset(commsBuffer,0,COMMS_BUFFER_SIZE);
+			strcpy(commsBuffer, "GET ");
+			strcat(commsBuffer, uri);
+			strcat(commsBuffer, " HTTP/1.0\r\nHost: ");
+			strcat(commsBuffer, host);
+			strcat(commsBuffer, "\r\nConnection: close\r\n\r\n");
+#ifdef DEBUG
+			Serial.println(commsBuffer);
+#endif
+			wifiClient.print(commsBuffer);
+			newState = OUT_PAGE;
+			break;
+
+		case OUT_PAGE:
+			waitWifiClientAvailable(HTTP_REQ_TIMEOUT);
+			while(wifiClient.available())
+				Serial.print(wifiClient.readStringUntil('\r'));
+			if (clientMode == CLIENT_MODE_GET)
+				newState = IN_ACTION;
+			else if (clientMode == CLIENT_MODE_QUERY)
+				newState = IN_URI;
 			break;
 
 		default:
