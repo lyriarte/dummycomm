@@ -32,9 +32,21 @@
 /* 
  * software serial comm to esp-01
  */
-#define COMMS_BUFFER_SIZE 1024
+#define COMMS_BUFFER_SIZE 768
 #define TX2 11
 #define RX2 10
+
+/* 
+ * automaton states
+ */
+enum {
+	START,
+	CLEANUP,
+	IN_SSID,
+	SLEEP,
+	SERIAL_ECHO,
+	SERIAL_READ
+};
 
 /* 
  * control loop frequency
@@ -47,6 +59,11 @@
  * Global variables
  * **** **** **** **** **** ****/
 
+/* 
+ * automaton status
+ */
+int currentState;
+
 int sleepms;
 
 char commsBuffer[COMMS_BUFFER_SIZE];
@@ -57,6 +74,10 @@ boolean connected;
 
 SoftwareSerial serial2(RX2, TX2);
 
+/* 
+ * Commands
+ */
+char *cmd;
 
 
 /* **** **** **** **** **** ****
@@ -152,6 +173,8 @@ boolean wifiSettingsInput() {
 }
 
 
+
+
 /* 
  * esp-01 wifi comm
  */
@@ -219,27 +242,100 @@ boolean wifiSendUri() {
 }
 
 
+/* 
+ * automaton
+ */
+int stateTransition(int currentState) {
+	int index = 0;
+	int newState = CLEANUP;
+	char * input = NULL;
+	switch (currentState) {
+		case START:
+			Serial.print("CMD: ");
+			if (!hostSerialAvailable(HOST_SERIAL_TIMEOUT)) {
+				newState = IN_SSID;
+				break;
+			}
+			if (!(input = userInput("")))
+				break;
+			saveString(input, &cmd);
+			if (!strcmp(cmd,"SSID"))
+				newState = IN_SSID;
+			else if (!strcmp(cmd,"ECHO"))
+				newState = SERIAL_ECHO;
+			else if (!strcmp(cmd,"READ"))
+				newState = SERIAL_READ;
+			else if (!strcmp(cmd,"SLEEP"))
+				newState = SLEEP;
+			break;
+
+		case SLEEP:
+			if (!(input = userInput("SECONDS: ")))
+				break;
+			delay(1000 * atoi(input));
+			newState = START;
+			break;
+
+		case SERIAL_ECHO:
+			if (!(input = userInput("VALUE: ")))
+				break;
+			serial2.print(input);
+			newState = START;
+			break;
+
+		case SERIAL_READ:
+			if (!(input = espInput(NULL)))
+				break;
+			newState = START;
+			break;
+
+		case CLEANUP:
+			while(Serial.readBytes(commsBuffer, COMMS_BUFFER_SIZE));
+			Serial.flush();
+			while(serial2.readBytes(commsBuffer, COMMS_BUFFER_SIZE));
+			serial2.flush();
+			commsBuffer[0] = 0;
+			wifiSettingsCleanup();
+			newState = START;
+			break;
+
+		case IN_SSID:
+			while (!wifiSettingsInput())
+				wifiSettingsCleanup();
+			connected = wifiConnect();
+			if (connected)
+				connected = wifiSendUri();
+			newState = START;
+			break;
+
+		default:
+			newState = CLEANUP;
+			break;
+	}
+#ifdef DEBUG
+	if (input) {
+		Serial.print("====> ");
+		Serial.println(input);
+	}
+#endif
+	return newState;
+}
 
 /* 
- * loop
+ * main loop
  */
 void loop() {
-	/* wifi settings user input */
-	if (!uri) {
-		connected = false;
-		while (!wifiSettingsInput())
-			wifiSettingsCleanup();
-		connected = wifiConnect();
-	}
 	/* control loop frequency */
 	unsigned long timeLoopStart;
 	unsigned long timeLoop;
 	timeLoopStart = millis();
-	/* send mesure / wifi get url */
-	if (connected)
-		connected = wifiSendUri();
-	if (!connected)
-		connected = wifiConnect();	
+#ifdef DEBUG
+	Serial.print("currentState: ");
+	Serial.println(currentState);
+#else
+	Serial.println();
+#endif
+	currentState = stateTransition(currentState);
 	/* control loop frequency */
 	timeLoop = millis() - timeLoopStart;
 	if (timeLoop < POLL)
