@@ -8,21 +8,23 @@
 
 #define BTX 13
 #define BRX 8
-#define SRV 7
 #define CARRIER 2
 #define NOFRAME 3
 #define NOFRAME_TRESHOLD 0xFFFF
 #define ERROR -1
+#define NSERV 6
 
 int sleepms;
 byte iobyte;
 byte bytebits[8];
-Servo servo;
+Servo servo[NSERV];
+byte srvpin[] = {3,5,6,9,10,11};
 
 void setup() {
 	pinMode(BTX, OUTPUT);
 	pinMode(BRX, INPUT);
-	servo.attach(SRV);
+	for (int i=0; i<NSERV; i++)
+		servo[i].attach(srvpin[i]);
 	Serial.begin(9600);
 	sleepms = 5;
 	iobyte = 128;
@@ -146,15 +148,19 @@ byte getByte() {
 }
 
 void loop() {
+	unsigned int id;
 	unsigned int angle;
+	iobyte=0;
 	sendByte(iobyte);
-	Serial.print("byte sent: ");
-	Serial.println(iobyte);
+	Serial.println("SERVO: ");
 	iobyte=getByte();
-	Serial.print("byte read: ");
-	Serial.println(iobyte);
+	id=iobyte;
+	if (id >= NSERV)
+		return;
+	iobyte=128;
+	sendByte(iobyte);
+	Serial.println("POSITION: ");
+	iobyte=getByte();
 	angle=((unsigned int)iobyte)*180/255;
-	Serial.print("servo angle: ");
-	Serial.println(angle);
-	servo.write(angle);
+	servo[id].write(angle);
 }
