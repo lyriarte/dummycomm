@@ -15,8 +15,8 @@
 /* 
  * ultra sonic telemeter mesure
  */
-#define INECHO 2
-#define TRIGGER 3
+#define INECHO 8
+#define TRIGGER 9
 #define ECHO_TIMEOUT 100000
 #define ECHO2CM(x) (x/60)
 #define MAX_CM 1000
@@ -25,6 +25,15 @@
  * servo
  */
 #define SRV 7
+
+/* 
+ * stepper
+ */
+#define STEP1 5
+#define STEP2 4
+#define STEP3 3
+#define STEP4 2
+#define STEPPERMS 5
 
 /* 
  * automaton states
@@ -49,6 +58,20 @@ enum {
 Servo servo;
 
 /* 
+ * stepper
+ */
+byte steps8[] = {
+  HIGH,  LOW,  LOW,  LOW,
+  HIGH, HIGH,  LOW,  LOW,
+   LOW, HIGH,  LOW,  LOW,
+   LOW, HIGH, HIGH,  LOW,
+   LOW,  LOW, HIGH,  LOW, 
+   LOW,  LOW, HIGH, HIGH,
+   LOW,  LOW,  LOW, HIGH,
+  HIGH,  LOW,  LOW, HIGH,
+};
+
+/* 
  * automaton status
  */
 int currentState;
@@ -65,6 +88,10 @@ char commsBuffer[COMMS_BUFFER_SIZE];
 void setup() {
 	pinMode(INECHO, INPUT);
 	pinMode(TRIGGER, OUTPUT);
+	pinMode(STEP1, OUTPUT);
+	pinMode(STEP2, OUTPUT);
+	pinMode(STEP3, OUTPUT);
+	pinMode(STEP4, OUTPUT);
 	servo.attach(SRV);
 	Serial.begin(BPS_HOST);
 	digitalWrite(TRIGGER, LOW);
@@ -76,6 +103,33 @@ void setup() {
  */
 void servoCommand(int angle) {
 	servo.write(angle);
+}
+
+/* 
+ * stepper command
+ */
+void step8(int pin1, int pin2, int pin3, int pin4) {
+	int i=0;
+	while (i<32) {
+		digitalWrite(pin1, steps8[i++]);
+		digitalWrite(pin2, steps8[i++]);
+		digitalWrite(pin3, steps8[i++]);
+		digitalWrite(pin4, steps8[i++]);
+		delay(STEPPERMS);
+	}
+} 
+
+void stepperCommand(int steps) {
+	while (steps) {
+		if (steps > 0) {
+			step8(STEP1,STEP2,STEP3,STEP4);
+			steps--;
+		}
+		else {
+			step8(STEP4,STEP3,STEP2,STEP1);
+			steps++;
+		}
+	}
 }
 
 /* 
@@ -127,7 +181,6 @@ int stateTransition(int currentState) {
 		case IN_CMD:
 			if (!(input = userInput("CMD: ")))
 				break;
-				
 			if (!strcmp(input,"SERVO"))
 				newState = IN_SERVO;
 			else if (!strcmp(input,"STEPPER"))
@@ -148,6 +201,7 @@ int stateTransition(int currentState) {
 			if (!(input = userInput("STEPS: ")))
 				break;
 			value = atoi(input);
+			stepperCommand(value);
 			newState = IN_CMD;
 			break;
 
