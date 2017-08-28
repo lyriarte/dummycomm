@@ -3,6 +3,7 @@
  * License: BSD <http://www.opensource.org/licenses/bsd-license.php>
  */
 
+#include <Servo.h> 
 
 /* **** **** **** **** **** ****
  * Constants
@@ -19,6 +20,11 @@
 #define ECHO_TIMEOUT 100000
 #define ECHO2CM(x) (x/60)
 #define MAX_CM 1000
+
+/* 
+ * servo
+ */
+#define SRV 7
 
 /* 
  * automaton states
@@ -38,6 +44,11 @@ enum {
  * **** **** **** **** **** ****/
 
 /* 
+ * servo
+ */
+Servo servo;
+
+/* 
  * automaton status
  */
 int currentState;
@@ -54,11 +65,18 @@ char commsBuffer[COMMS_BUFFER_SIZE];
 void setup() {
 	pinMode(INECHO, INPUT);
 	pinMode(TRIGGER, OUTPUT);
+	servo.attach(SRV);
 	Serial.begin(BPS_HOST);
 	digitalWrite(TRIGGER, LOW);
 	currentState = START;
 }
 
+/* 
+ * servo command
+ */
+void servoCommand(int angle) {
+	servo.write(angle);
+}
 
 /* 
  * telemeter mesure
@@ -122,6 +140,7 @@ int stateTransition(int currentState) {
 			if (!(input = userInput("ANGLE: ")))
 				break;
 			value = atoi(input);
+			servoCommand(value);
 			newState = IN_CMD;
 			break;
 
